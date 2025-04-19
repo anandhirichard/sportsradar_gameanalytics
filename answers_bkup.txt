@@ -1,0 +1,233 @@
+####Q1 List all competitions along with their category name #######
+
+-- check1- select count(*) as cnt, count(distinct category_id) as cat_count, count(distinct competition_name) as comp_name_count from competition_df
+
+-- Select DISTINCT competition_name, category_id from competition_df
+
+/* CREATE TABLE sportsradar.Q1_1 as 
+SELECT 
+    c.competition_id, c.competition_name,  c.type, c.gender, c.category_id,c.parent_id
+    , cat.category_name
+FROM sportsradar.competition_df c 
+LEFT JOIN (Select distinct category_id, category_name from sportsradar.category_df ) cat 
+ON 
+c.category_id = cat.category_id */
+
+/*create table q1_1_output as
+Select distinct category_name, competition_name from sportsradar.q1_1*/
+
+/*select * from q1_1_output*/
+
+#####Q2 Count the number of competitions in each category
+
+/*create table q1_2_output as
+select category_name, count(distinct competition_name) as cnt_comp_name 
+from q1_1 group by category_name*/
+
+/*select * from q1_2_output*/
+
+#####Q3 Find all competitions of type 'doubles'
+#check1- select count(*) as cnt from competition_df where competition_name like '%Doubles%' - 2927 - 
+#check2- select count(*) as cnt from competition_df where type = 'doubles' -2919
+#check3- select count(distinct competition_name) as distcnt from competition_df where type = 'doubles' -2919
+
+/*CREATE TABLE q1_3_output as
+select distinct competition_name,type from competition_df where type = 'doubles'*/
+
+/*select * from q1_3_output*/
+
+#####Q4 Get competitions that belong to a specific category (e.g., ITF Men)
+# Select COUNT(*) as cnt from competition_df where competition_name like '%ITF Men%' -294
+
+/*CREATE table q1_4_output as
+Select DISTINCT competition_name from competition_df where competition_name like '%ITF Men%'*/
+
+/*select * from q1_4_output*/
+
+##########Q5 Identify parent competitions and their sub-competitions
+
+#select count(*) as cnt from competition_df where parent_id != "" - 5827
+
+/*create table q1_5_output as 
+select category_name,type,gender,count(*) as cnt
+from q1_1 
+where parent_id != ""
+group by category_name,type,gender;*/
+
+/*select * from q1_5_output*/
+
+*** Sub Competition ID ***
+
+/*create table q1_5_1_output as 
+select category_name,type,gender,count(*) as cnt
+from q1_1 
+where parent_id =""
+group by category_name,type,gender;*/
+
+select * from q1_5_1_output
+
+
+
+#####Q6 Analyze the distribution of competition types by category
+
+#select type, count(category_id) as cnt , count(distinct category_id) as dstcnt from competition_df group by type -32 distinct
+
+/*Create table Q1_6_output as
+select category_name, type, count(*) as cnt from Q1_1 group by category_name, type*/
+
+/*select * from Q1_6_output*/
+
+##########Q7 List all competitions with no parent (top-level competitions)
+
+/*create table q1_7_output as 
+select competition_id, competition_name from Q1_1 where parent_id = ""*/
+
+select * from q1_7_output
+
+
+##################################################################################################################################
+
+/********** Create Table 2_1 (by merging table3 & table4)
+
+CREATE TABLE sportsradar.Q2_1 as 
+SELECT 
+    v.venue_id, v.venue_name,  v.city_name, v.country_name
+    , v.country_code,v.timezone,v.complex_id
+    , cmp.complex_name
+FROM sportsradar.venues_df v 
+LEFT JOIN (Select distinct complex_id, complex_name from sportsradar.complexes_df ) cmp 
+ON 
+v.complex_id = cmp.complex_id
+
+##########Q2_1 List all venues along with their associated complex name
+
+/*create table q2_1_output as
+select DISTINCT complex_name,venue_id, venue_name from q2_1;*/
+
+select * from q2_1_output
+
+##########Q2_2 Count the number of venues in each complex
+
+/*create table q2_2_output as
+select complex_name, count(distinct  venue_name) as dist_venue_count 
+from q2_1
+group by complex_name
+order by dist_venue_count DESC;*/
+
+select * from q2_2_output
+
+##########Q2_3 Get details of venues in a specific country (e.g., Chile)
+
+/*create table q2_3_output as
+select distinct city_name, complex_name, venue_name from Q2_1 where country_name = 'Chile'*/
+
+select * from q2_3_output
+
+##########Q2_4 Identify all venues and their timezones
+
+/*create table q2_4_output as
+select distinct timezone, venue_name from Q2_1*/
+
+select * from q2_4_output
+
+##########Q2_5 Find complexes that have more than one venue
+
+/*create table q2_5_output as
+select complex_name, count(distinct venue_id) as dist_venue_count
+from q2_1_output
+group by complex_name
+having dist_venue_count > 1
+order by dist_venue_count desc;*/
+
+select * from q2_5_output
+
+##########Q2_6 List venues grouped by country
+
+/*create table q2_6_output as
+select distinct country_name, venue_name from q2_1*/
+
+select * from q2_6_output
+
+
+##########Q2_7 Find all venues for a specific complex (e.g., Nacional)
+
+/*create table q2_7_output as
+select distinct venue_id, venue_name from Q2_1 where complex_name = "Nacional"*/
+
+select * from q2_7_output
+
+##########Q3_1 Get all competitors with their rank and points.
+
+CREATE TABLE sportsradar.Q3_1 as 
+SELECT 
+    r.tournament_name, r.year,  r.week, r.gender, r.rank, r.movement, r.points
+    , r.competitions_played
+    , rank.name, rank.country, rank.country_code
+FROM sportsradar.competitor_ranking_df r 
+LEFT JOIN (Select distinct competitor_id, name, country, country_code  from sportsradar.competitor_df ) rank 
+ON 
+r.competitor_id = rank.competitor_id
+
+##########Q3_1 Get all competitors with their rank and points.
+
+/*create table q3_1_output as
+select name, rank, points 
+from Q3_1
+order by rank */
+
+select * from q3_1_output
+
+##########Q3_2 Find competitors ranked in the top 5
+
+/*create table q3_2_output
+select name, rank, points 
+from q3_1
+where rank < 6
+order by rank*/
+
+select * from q3_2_output
+
+##########Q3_3 List competitors with no rank movement (stable rank)
+
+/*create table q3_3_output as
+select name, rank, points from Q3_1 where movement = 0*/
+
+select * from q3_3_output;
+
+
+##########Q3_4 Get the total points of competitors from a specific country (e.g., Croatia)
+
+/*create table q3_4_outputs as 
+select country, sum(points) as total_points
+from q3_1 
+group by country
+order by total_points desc*/
+
+select * from q3_4_outputs
+
+##########Q3_5 Count the number of competitors per country
+
+/*create table q3_5_output as
+select country, count(DISTINCT name) as no_of_competitors
+from q3_1
+group by country
+order by no_of_competitors desc*/
+
+select * from q3_5_output
+
+##########Q3_6 Find competitors with the highest points in the current week
+
+/*create table q3_6_outputs as
+select name, rank, points 
+from q3_1
+order by points desc*/
+
+select * from q3_6_outputs
+
+
+
+
+
+
+
+
